@@ -45,6 +45,9 @@ function twoClassesClassificationSkeleton
     figure; scatter(C1(:,1), C1(:, 2), 'x');
     hold on;
     scatter(C2(:,1), C2(:, 2));
+    
+    %---------------------------------------------------------------------
+    
     %Calculates the least squares weight array
     W = getW_leastSquares(Xd, T); %Coordenada de cada X con un bias
     %test 1
@@ -55,9 +58,13 @@ function twoClassesClassificationSkeleton
     for i = 1:size(C2, 1)
         yResC2(i) = getY(W, [1 C2(i, :)]);
     end
+    
+    %---------------------------------------------------------------------
     %prueba con fisher
+    
     C1n = [ones(size(C1, 1), 1) C1];
     C2n = [ones(size(C2, 1), 1) C2];
+    
     %fisher evaluation
     Wfish = fisherDA(C1n, C2n);
     for i = 1:size(C1, 1)
@@ -72,7 +79,9 @@ function twoClassesClassificationSkeleton
     hold on;
     scatter(yResC2Fish, yResC2Fish);
     
+    %---------------------------------------------------------------------
     %prueba con perceptron
+    
     %perceptron needs T to be -1 or 1, not 0 or 1, needs to be corrected
     numIter = 1000;
     Wperc = perceptronTraining(C1n, C2n, numIter);
@@ -82,6 +91,7 @@ function twoClassesClassificationSkeleton
     for i = 1:size(C2, 1)
         yResC2Perc(i) = perceptronActivationFunc(Wperc, C2n(i, :));
     end
+    
 end
 
 %Implements the perceptron training algorithm
@@ -114,10 +124,11 @@ function y = getY(W, x)
 end
 
 
-
 function W = getW_leastSquares(X, T)
     W = pinv(X'*X)*X'*T;
 end
+
+
 %function to approximate
 function y = realDiscriminant(x)
     %y = 0 in x(1) = 0.5 and x(2)=0.5
