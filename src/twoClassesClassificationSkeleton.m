@@ -1,4 +1,5 @@
 %Generación de datos linealmente separables para datos de prueba
+
 function twoClassesClassificationSkeleton
     cantidadDatos = 100;
 
@@ -49,16 +50,19 @@ function twoClassesClassificationSkeleton
     scatter(C2(:,1), C2(:, 2));
     
     %---------------------------------------------------------------------
+    
     % Extraccion de los datos de trainning y testing
     [C1train, C1test] = DivideSet(C1, 0.7);
     [C2train, C2test] = DivideSet(C2, 0.7);
  
-    unos = ones(length(C1train)+length(C2train), 1); %Se crea la columna de 1s del bias, suma la ctd de cada clase
+    unos = ones(length(C1train)+length(C2train), 1); %Se crea la columna de
+                                    %1s del bias, suma la ctd de cada clase
     Xd = [unos, [C1train;C2train]]; %Concatena toda la vara
-
+    
     %---------------------------------------------------------------------
     
     %Calculates the least squares weight array
+    
     W = getW_leastSquares(Xd, T); %Coordenada de cada X con un bias
     %test 1
     for i = 1:size(C1, 1)
@@ -69,10 +73,9 @@ function twoClassesClassificationSkeleton
         yResC2(i) = getY(W, [1 C2(i, :)]);
     end
         
-    
     %---------------------------------------------------------------------
-    %prueba con fisher
     
+    %prueba con fisher 
     C1n = [ones(size(C1, 1), 1) C1];
     C2n = [ones(size(C2, 1), 1) C2];
     
@@ -85,7 +88,7 @@ function twoClassesClassificationSkeleton
         yResC2Fish(i) = getYFish(Wfish, C2n(i, :));
     end
     
-     figure; 
+    figure;
     scatter(yResC1Fish, yResC1Fish, 'x');
     hold on;
     scatter(yResC2Fish, yResC2Fish);
@@ -131,14 +134,12 @@ function y = getY(W, x)
     y = W' * x';
  
     %w0 is the threshold used for decision
-    y = y - W(1)>0 ;
+    y = y - W(1)>0;
 end
-
 
 function W = getW_leastSquares(X, T)
     W = pinv(X'*X)*X'*T;
 end
-
 
 %function to approximate
 function y = realDiscriminant(x)
