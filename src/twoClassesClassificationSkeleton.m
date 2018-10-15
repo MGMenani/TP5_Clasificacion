@@ -54,6 +54,9 @@ function twoClassesClassificationSkeleton
     % Extraccion de los datos de trainning y testing
     [C1train, C1test] = DivideSet(C1, 0.7);
     [C2train, C2test] = DivideSet(C2, 0.7);
+    
+    T = [zeros(length(C1train),1);ones(length(C2train),1)];
+    Ttest = [zeros(length(C1test),1);ones(length(C2test),1)];
  
     unos = ones(length(C1train)+length(C2train), 1); %Se crea la columna de
                                     %1s del bias, suma la ctd de cada clase
