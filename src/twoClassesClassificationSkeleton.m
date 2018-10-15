@@ -1,5 +1,7 @@
 %Generación de datos linealmente separables para datos de prueba
 function twoClassesClassificationSkeleton
+    cantidadDatos = 100;
+
     close all;
     separacion = 0.05;
     %D = 2, dimensionality of the input (temp and humidity)
@@ -7,8 +9,8 @@ function twoClassesClassificationSkeleton
     maxValX2 = 15;
     %two features, generated randomly
     %100 datos en el espacio de 0 a 15 en X y Y
-    x1 = maxValX1 * rand(100, 1);
-    x2 = maxValX2 * rand(100, 1);
+    x1 = maxValX1 * rand(cantidadDatos, 1);
+    x2 = maxValX2 * rand(cantidadDatos, 1);
     X = [x1 x2]; %X(1,:) = x_1, ... etc
     % one sample per row
     c1 = 1;
@@ -47,6 +49,14 @@ function twoClassesClassificationSkeleton
     scatter(C2(:,1), C2(:, 2));
     
     %---------------------------------------------------------------------
+    % Extraccion de los datos de trainning y testing
+    [C1train, C1test] = DivideSet(C1, 0.7);
+    [C2train, C2test] = DivideSet(C2, 0.7);
+ 
+    unos = ones(length(C1train)+length(C2train), 1); %Se crea la columna de 1s del bias, suma la ctd de cada clase
+    Xd = [unos, [C1train;C2train]]; %Concatena toda la vara
+
+    %---------------------------------------------------------------------
     
     %Calculates the least squares weight array
     W = getW_leastSquares(Xd, T); %Coordenada de cada X con un bias
@@ -58,6 +68,7 @@ function twoClassesClassificationSkeleton
     for i = 1:size(C2, 1)
         yResC2(i) = getY(W, [1 C2(i, :)]);
     end
+        
     
     %---------------------------------------------------------------------
     %prueba con fisher
