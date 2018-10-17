@@ -127,30 +127,35 @@ function twoClassesClassificationSkeleton
 
     %---------------------------------------------------------------------
     
+    C1bias = [ones(size(C1train, 1), 1) C1train];
+    C2bias = [ones(size(C2train, 1), 1) C2train];
+    
+    %---------------------------------------------------------------------
+    
     %prueba con fisher 
     C1n = [ones(size(C1, 1), 1) C1];
     C2n = [ones(size(C2, 1), 1) C2];
-    
-    %fisher evaluation
-    Wfish = fisherDA(C1n, C2n);
-    for i = 1:size(C1, 1)
-        yResC1Fish(i) = getYFish(Wfish, C1n(i, :));
-    end
-    for i = 1:size(C2, 1)
-        yResC2Fish(i) = getYFish(Wfish, C2n(i, :));
-    end
-    
-    figure;
-    scatter(yResC1Fish, yResC1Fish, 'x');
-    hold on;
-    scatter(yResC2Fish, yResC2Fish);
+%     
+%     %fisher evaluation
+%     Wfish = fisherDA(C1n, C2n);
+%     for i = 1:size(C1, 1)
+%         yResC1Fish(i) = getYFish(Wfish, C1n(i, :));
+%     end
+%     for i = 1:size(C2, 1)
+%         yResC2Fish(i) = getYFish(Wfish, C2n(i, :));
+%     end
+%     
+%     figure;
+%     scatter(yResC1Fish, yResC1Fish, 'x');
+%     hold on;
+%     scatter(yResC2Fish, yResC2Fish);
     
     %---------------------------------------------------------------------
     %prueba con perceptron
     
     %perceptron needs T to be -1 or 1, not 0 or 1, needs to be corrected
     numIter = 1000;
-    Wperc = perceptronTraining(C1n, C2n, numIter);
+    Wperc = perceptronTraining(C1bias, C2bias, numIter);
     for i = 1:size(C1, 1)
         yResC1Perc(i) = perceptronActivationFunc(Wperc, C1n(i, :));
     end
@@ -161,18 +166,24 @@ function twoClassesClassificationSkeleton
 end
 
 %Implements the perceptron training algorithm
-function W = perceptronTraining(C1n, C2n, numIter)
-    
+function y = perceptronTraining(C1n, C2n, numIter)
+    W = rand(3,length(C1n)+length(C2n));
+    M = [C1n;C2n];
+    y = W*M;    
 end
+
 %activation function of the perceptron algorithm
 function f = perceptronActivationFunc(W, x) 
    r = W'*x;
    if r>=0
-       f = 1
+       f = 1;
    else
-       f = -1
+       f = -1;
    end
 end
+
+
+%------------------------------------------------------------------------
 
 %C1 and C2 tagged data
 %Implements the Fisher discriminant analysis
