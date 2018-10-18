@@ -124,78 +124,100 @@ function twoClassesClassificationSkeleton
 %     figure;
 %     surf(x1,x2,y);
     
-
     %---------------------------------------------------------------------
     
     C1bias = [ones(size(C1train, 1), 1) C1train];
     C2bias = [ones(size(C2train, 1), 1) C2train];
+    
+    C1testbias = [ones(size(C1test, 1), 1) C1test];
+    C2testbias = [ones(size(C2test, 1), 1) C2test];
     
     %---------------------------------------------------------------------
     
     %prueba con fisher 
     C1n = [ones(size(C1, 1), 1) C1];
     C2n = [ones(size(C2, 1), 1) C2];
-%     
-%     %fisher evaluation
-%     Wfish = fisherDA(C1n, C2n);
-%     for i = 1:size(C1, 1)
-%         yResC1Fish(i) = getYFish(Wfish, C1n(i, :));
-%     end
-%     for i = 1:size(C2, 1)
-%         yResC2Fish(i) = getYFish(Wfish, C2n(i, :));
-%     end
-%     
-%     figure;
-%     scatter(yResC1Fish, yResC1Fish, 'x');
-%     hold on;
-%     scatter(yResC2Fish, yResC2Fish);
+     
+    %fisher evaluation
+    Wfish = fisherDA(C1bias, C2bias);
+    
+    yResC1Fish = getYFish(Wfish, C1testbias);
+    yResC2Fish = getYFish(Wfish, C2testbias);
+    
+    figure;
+    scatter(yResC1Fish, yResC1Fish, 'x');
+    hold on;
+    scatter(yResC2Fish, yResC2Fish);
     
     %---------------------------------------------------------------------
     %prueba con perceptron
     
     %perceptron needs T to be -1 or 1, not 0 or 1, needs to be corrected
-    numIter = 1000;
-    Wperc = perceptronTraining(C1bias, C2bias, numIter);
-    for i = 1:size(C1, 1)
-        yResC1Perc(i) = perceptronActivationFunc(Wperc, C1n(i, :));
-    end
-    for i = 1:size(C2, 1)
-        yResC2Perc(i) = perceptronActivationFunc(Wperc, C2n(i, :));
-    end
+    numIter = 5000;
+    Wperc = perceptronTraining(C1bias, C2bias, numIter, 0.5);
     
+    t1 = ones(1,length(C1testbias));
+    t2 = -(ones(1,length(C2testbias)));
+    
+    yResC1Perc = perceptronActivationFunc(Wperc, C1testbias);
+    yResC2Perc = perceptronActivationFunc(Wperc,C2testbias);
+    
+    resultA = t1+yResC1Perc;
+    resultB = t2+yResC2Perc;
+
 end
 
 %Implements the perceptron training algorithm
-function y = perceptronTraining(C1n, C2n, numIter)
-    W = rand(3,length(C1n)+length(C2n));
-    M = [C1n;C2n];
-    y = W*M;    
+function W = perceptronTraining(C1n, C2n, numIter, lrate)
+    W = rand(3,1);
+    t1 = ones(1,length(C1n));
+    t2 = -(ones(1,length(C2n)));
+    
+    for i=1:numIter        
+        y1 = W'*C1n';
+        y2 = W'*C2n';
+        
+        EC1 = y1 .* t1; %Criterio del perceptron (Error)
+        EC2 = y2 .* t2;
+        
+        uc1 = find(EC1<=0); %Indices de las muestras mal clasificadas
+        uc2 = find(EC2<=0);
+        
+        gradiente =  sum([ C1n(uc1,:); C2n(uc2,:).*-1 ]);
+        
+        W = W + (gradiente.*lrate)';
+    end
 end
 
 %activation function of the perceptron algorithm
-function f = perceptronActivationFunc(W, x) 
-   r = W'*x;
-   if r>=0
-       f = 1;
-   else
-       f = -1;
-   end
+function f = perceptronActivationFunc(W, X) 
+   y = W'*X';
+   y(y>=0) = 1;
+   y(y<0) = -1;
+   f = y;
 end
-
 
 %------------------------------------------------------------------------
 
 %C1 and C2 tagged data
 %Implements the Fisher discriminant analysis
 function w = fisherDA(C1, C2)
+    u1 = mean(C1); %Medias de los datos por clase
+    u2 = mean(C2); %1xD
     
+    S1 = bsxfun(@minus, C1, u1)' * bsxfun(@minus, C1, u1);
+    S2 = bsxfun(@minus, C2, u2)' * bsxfun(@minus, C2, u2);
+    Sw = S1+ S2;
+    
+    w = pinv(Sw) * (u1-u2)';
 end
 
 %Projects the given sample using the weight vector W
-function y = getYFish(W, x)
-   
- 
+function y = getYFish(W, X)
+    y = X * W;
 end
+
+%------------------------------------------------------------------------
 
 %Evaluates the min squares classification algorithm
 function y = getY(W, x)
